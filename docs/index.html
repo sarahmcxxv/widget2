@@ -2,242 +2,207 @@
 <html>
 <head>
   <style>
-	  $black: white;
-$blue: rgba(91,83,61,255);
-$dirtyWhite: #040705;
-$darkPink: #D1D4C0;
-
-// transition for cx, cy, and d attribute 	
-* {
-	transition: all .5s;
+      body
+{
+  font-family: "Times New Roman", Times, serif;
+  font-weight: bold;
+  background-color: white;
 }
 
-body {
-	background-color: $black;
-	font-family: 'Hiragino Mincho ProN';
+#widget
+{
+  height: 80px;
+  width: 415px;
+  position: relative;
+  border-radius: 8px;
 }
 
-.text {
-	position: absolute;
-	left: 10px;
-	bottom: 10px;
+h1
+{
+  position: absolute;
+  left: 52px;
+  top:2px;
+  font-size: 18px;
 }
 
-svg {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
+img
+{
+  width: 30px;
+  height: auto;
+  position:absolute;
+  bottom: 10.5px;
+  left: 13px;
 }
 
-.textTime {
-	fill: black;
-	text-anchor: middle;
-	alignment-baseline: middle;
-	font-size: 1.7rem;
-	font-weight: 100;
+/*
+#progress-bar {
+    appearance: none;
+    position: absolute;
+    height: 5px;
+    background: #000000;
+    width: 200pt;
+    bottom: 20px;
+    border-radius: 1px;
+    left: 79px;
+}
+*/
+
+#progress-bar {
+    position: absolute;
+    height: 5px;
+    background: #000000;
+    width: 200pt;
+    bottom: 18px;
+    border-radius: 1px;
+    left: 75px;}
+
+input[type=range]{
+    -webkit-appearance: none;
 }
 
-.outerRing {
-	fill: none;
-	stroke: $dirtyWhite;
-	stroke-width: 2px;
-	stroke-dasharray: 4px;
-	opacity: .5;
+input[type=range]::-webkit-slider-runnable-track {
+    width: 300px;
+    height: 5px;
+    background: #ddd;
+    border: none;
 }
 
-.primCircle {
-	fill: $black;
-	stroke: $dirtyWhite;
-	stroke-width: 10px;
+input[type=range]:focus {
+    outline: none;
 }
 
-.secCircle {
-	fill: $blue;
-	stroke: $black;
-	stroke-width: 3px;
+input[type=range]:focus::-webkit-slider-runnable-track {
+    background: #ccc;
 }
 
-.spike {
-	stroke: $dirtyWhite;
-	stroke-width: 2px;
+.kit {
+    -webkit-appearance:none;
+    appearance:none;
+    margin:5px;
+    width:calc(100% - 10px);
+    width:-webkit-calc(100% - 10px);
+    height:25px;
+    outline:none;
+    overflow: hidden;
 }
 
-.triangle {
-	fill: $darkPink;
+.kit::-webkit-slider-thumb {
+    -webkit-appearance:none;
+    appearance:none;
+    width:5px;
+    height:5px;
+    background:black;
+    box-shadow: -99vw 0 0 calc(99vw - 3px) black;
+    cursor:pointer;
 }
-	   </style>
+
+
+.currentTime {
+    position: absolute;
+    cursor: pointer;
+    bottom: 17px;
+    left: 48px;
+    font-size: 13px;
+    color: black;
+}
+
+#progress-bar:focus {
+    outline: none;
+}
+
+.durationTime {
+    position: absolute;
+    cursor: pointer;
+    font-size: 13px;
+    color: black;
+    bottom: 17px;
+    left: 355px;
+}
+  </style>
 </head>
 
 <body>
-	
-	<div class="clock"></div>
-	
-	  <script>
-		  
-		  const { useState, useEffect } = React;
+<div id="widget">
 
-// small circle radius
-const r1 = 5;
-const r2 = 10;
-const r3 = 15;
-const width = window.innerWidth;
-const height = window.innerHeight;
+<h1>♫ Is This Love - Vincenzo OST Part 5 ♫</h1>
+    
+  <img src="https://raw.githubusercontent.com/sarahmcxxv/notion-vin-musicplayer/main/play.png" onclick="playPause()" id="play-pause"/>
+  
+<div id="barcontainer">
+<input
+  type="range"
+  id="progress-bar"
+  class="kit"
+  min="0"
+  max=""
+  value="0"
+  onchange="changeProgressBar()"/>
+</div>
 
-const minWH = Math.min(width, height);
+    <div class="currentTime"></div>
+    <div class="durationTime"></div>
+  
+</div>
 
-let maxSize;
-if (minWH < 430) {
-	maxSize = minWH - 30;
-} else {
-	maxSize = 400;
+
+  <audio src="https://a.pomf.cat/axrvbh.mp3" id="song"></audio> 
+  
+  <script>
+  
+const song = document.querySelector('#song');
+const progressBar = document.querySelector('#progress-bar'); // element where progress bar appears
+let pPause = document.querySelector('#play-pause');
+
+<!--Play button-->
+let playing = true;
+
+function playPause() {
+  if (playing) {
+    pPause.src ="https://raw.githubusercontent.com/sarahmcxxv/notion-vin-musicplayer/main/pause.png"; //this will change the Play button to a Pause button
+    song.play(); //this will play the audio track
+    playing = false;
+  } 
+  
+  else {
+    pPause.src = "https://raw.githubusercontent.com/sarahmcxxv/notion-vin-musicplayer/main/play.png";
+    song.pause();
+    playing = true;
+  }
 }
 
-// utils
-// deg to radian
-const rad = (a) => (Math.PI * (a - 90)) / 180;
-
-// relative polar coordinates
-const rx = (r, a, c) => c + r * Math.cos(rad(a, c));
-
-const ry = (r, a, c) => c + r * Math.sin(rad(a));
-
-// get hours, minutes, and seconds
-const HMS = (t) => ({
-	h: t.getHours(),
-	m: t.getMinutes(),
-	s: t.getSeconds()
-});
-
-const pathStringVars = (c, r, time) => {
-	// center, radius and time = this.props
-	// const {c,r,time} = p
-	const { h, m, s } = HMS(time);
-
-	// divide 360 deg by 12hrs, 60min, and 60s
-	const hAngFact = 30;
-	const mAngFact = 6;
-	const sAngFact = 6;
-
-	// calc relative coordinates
-	const hx = rx(r - 30, hAngFact * h, c);
-	const hy = ry(r - 30, hAngFact * h, c);
-	const mx = rx(r - 30, mAngFact * m, c);
-	const my = ry(r - 30, mAngFact * m, c);
-	const sx = rx(r - 30, sAngFact * s, c);
-	const sy = ry(r - 30, sAngFact * s, c);
-
-	return { hx, hy, mx, my, sx, sy };
+// update progressBar.max to song object's duration, same for progressBar.value, update currentTime/duration DOM
+function updateProgressValue() {
+    progressBar.max = song.duration;
+    progressBar.value = song.currentTime;
+    document.querySelector('.currentTime').innerHTML = (formatTime(Math.floor(song.currentTime)));
+    if (document.querySelector('.durationTime').innerHTML === "NaN:NaN") {
+        document.querySelector('.durationTime').innerHTML = "0:00";
+    } else {
+        document.querySelector('.durationTime').innerHTML = (formatTime(Math.floor(song.duration)));
+    }
 };
 
-const TextTime = ({ x, y, time }) => {
-	const str = time.toTimeString().slice(0, 8).replace(/:/g, " : ");
-	return (
-		<text x={x} y={y} className="textTime">
-			{str}
-		</text>
-	);
+// convert song.currentTime and song.duration into MM:SS format
+function formatTime(seconds) {
+    let min = Math.floor((seconds / 60));
+    let sec = Math.floor(seconds - (min * 60));
+    if (sec < 10){ 
+        sec  = `0${sec}`;
+    };
+    return `${min}:${sec}`;
 };
 
-// Circle component
-const Circle = ({ cx, cy, radius, className }) => (
-	<circle cx={cx} cy={cy} r={radius} className={className} />
-);
+// run updateProgressValue function every 1/2 second to show change in progressBar and song.currentTime on the DOM
+setInterval(updateProgressValue, 500);
 
-// Single spike
-const Spike = ({ x1, x2, y1, y2 }) => (
-	<line className="spike" x1={x1} x2={x2} y1={y1} y2={y2} />
-);
-
-const spikeNodes = (c, radius) => {
-	const increment = 30;
-	const nodes = [];
-
-	for (let i = 1; i < 13; i++) {
-		let ang = i * increment;
-
-		let temp = (
-			<Spike
-				x1={rx(radius - 5, ang, c)}
-				x2={rx(radius - 10, ang, c)}
-				y1={ry(radius - 5, ang, c)}
-				y2={ry(radius - 10, ang, c)}
-				key={i}
-			/>
-		);
-		nodes.push(temp);
-	}
-	return nodes;
+// function where progressBar.value is changed when slider thumb is dragged without auto-playing audio
+function changeProgressBar() {
+    song.currentTime = progressBar.value;
 };
-
-// populate Spikes
-const Spikes = ({ c, radius }) => <g>{spikeNodes(c, radius)}</g>;
-
-// triangle component
-const Triangle = ({ c, r, time }) => {
-	const { hx, hy, mx, my, sx, sy } = pathStringVars(c, r, time);
-	const path = `M${hx},${hy} L${mx},${my} L${sx},${sy} L${hx},${hy}`;
-	return <path className="triangle" d={path} />;
-};
-
-// Secondary circles
-const SecCircle = ({ c, r, time }) => {
-	const { hx, hy, mx, my, sx, sy } = pathStringVars(c, r, time);
-	return (
-		<g>
-			<Circle className="secCircle" cx={hx} cy={hy} radius={r3} />
-			<Circle className="secCircle" cx={mx} cy={my} radius={r2} />
-			<Circle className="secCircle" cx={sx} cy={sy} radius={r1} />
-		</g>
-	);
-};
-
-// main container
-const Clock = () => {
-	const [time, setTime] = useState(new Date());
-
-	useEffect(() => {
-		window.setInterval(() => {
-			setTime(new Date());
-		}, 1000);
-	}, []);
-
-	const size = maxSize;
-
-	const viewBox = `0 0 ${size} ${size}`;
-
-	const mid = size / 2;
-
-	const paddedRadius = (size - 30) / 2;
-
-	return (
-		<svg
-			xmlns="http://www.w3.org/svg/2000"
-			viewBox={viewBox}
-			width={size}
-			height={size}
-		>
-			<Circle className="outerRing" cx={mid} cy={mid} radius={mid - 5} />
-			<Circle className="primCircle" cx={mid} cy={mid} radius={mid - 15} />
-			<Spikes c={mid} radius={paddedRadius} />
-			<Triangle c={mid} r={paddedRadius} time={time} />
-			<SecCircle c={mid} r={paddedRadius} time={time} />
-			<TextTime time={time} x={mid} y={mid} />
-		</svg>
-	);
-};
-
-ReactDOM.render(<Clock />, document.querySelector(".clock"));
-
-		  
-		  </script>
+  </script>
   
   
   
 </body>
 
 </html>
-	
-	
-	
-	
